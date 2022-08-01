@@ -1,0 +1,86 @@
+syntax = "proto3";
+
+package protobuf;
+
+option go_package = "/pb";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/any.proto";
+import "google/protobuf/empty.proto";
+
+message Auction {
+    string ID = 1;
+    string Title = 2;
+    string Description = 3;
+    int64 OrganizerID = 4;
+    int32 MaxParticipants = 5;
+    int32 ParticipantsNumber = 6;
+    google.protobuf.Timestamp StartsAt = 7;
+    google.protobuf.Timestamp EndsAt = 8;   
+    string Status = 9;
+};
+
+message Product{
+    string ID = 1;
+    string AuctionID = 2;
+    string Title = 3;
+    string Description = 4;
+    int64 StartPrice = 5;
+    map<string, google.protobuf.Any> Params = 6;
+};
+
+message Response {
+    string Message = 1;
+    string Error = 2;
+    string ErrorCode = 3;
+};
+
+
+message CreateAuctionRequest{
+    Auction Auction = 1;
+};
+
+message UpdateAuctionRequest {
+    Auction Auction = 1;
+};
+
+message CancelAuctionRequest {
+    string ID = 1;
+};
+
+message AddParticipantRequest {
+    string AuctionID = 1;
+    string ParticipantID = 2;
+};
+
+message DeleteParticipantRequest {
+    string AuctionID = 1;
+    string ParticipantID = 2;
+};
+
+message AddProductRequest {
+    string AuctionID = 1;
+    Product Product = 2;
+};
+
+message UpdateProductRequest {
+    string AuctionID = 1;
+    Product Product = 2;
+};
+
+message DeletePoductRequest {
+    string AuctionID = 1;
+    string ProductID = 2;
+};
+
+
+service AuctionsService{
+    rpc CreateAuction (CreateAuctionRequest) returns (google.protobuf.Empty) {};
+    rpc UpdateAuction (UpdateAuctionRequest) returns (google.protobuf.Empty) {};
+    rpc CancelAuction (CancelAuctionRequest) returns (google.protobuf.Empty) {};
+    rpc AddParticipant (AddParticipantRequest) returns (google.protobuf.Empty) {};
+    rpc DeleteParticipant (DeleteParticipantRequest) returns (google.protobuf.Empty) {};
+    rpc AddProduct (AddProductRequest) returns (google.protobuf.Empty) {};
+    rpc UpdateProduct (UpdateProductRequest) returns (google.protobuf.Empty) {};
+    rpc DeleteProduct (DeletePoductRequest) returns (google.protobuf.Empty) {};
+};
