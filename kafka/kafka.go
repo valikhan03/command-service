@@ -6,7 +6,7 @@ import (
 )
 
 
-func NewProducer() *sarama.SyncProducer {
+func NewProducer() sarama.SyncProducer {
 	config := &sarama.Config{}
 	config.Producer.RequiredAcks = sarama.WaitForAll
 	config.Producer.Return.Errors = true
@@ -16,6 +16,6 @@ func NewProducer() *sarama.SyncProducer {
 		log.Fatalf("unable to connect kafka producer: %v\n", err)
 	}
 
-	return &producer
+	return producer
 }
 

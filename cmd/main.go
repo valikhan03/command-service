@@ -1,12 +1,14 @@
 package main
 
 import (
-	"net"
 	"fmt"
-	"os"
 	"log"
+	"net"
+	"os"
 
 	"auctions-service/db"
+	"auctions-service/kafka"
+	"auctions-service/models"
 	"auctions-service/pb"
 	"auctions-service/repositories"
 	"auctions-service/services"
@@ -15,8 +17,13 @@ import (
 )
 
 func main() {
+	eventsChan := make(chan *models.Event)
+
 	repository := repositories.NewRepository(db.InitDatabase())
-	service := services.NewService(repository)
+	service := services.NewService(repository, eventsChan)
+
+	eventsProd := models.NewEventProducer(kafka.NewProducer(), eventsChan)
+	go eventsProd.SendEvents()
 
 	grpcServer := grpc.NewServer()
 

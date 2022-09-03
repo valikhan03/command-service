@@ -9,68 +9,69 @@ import "google/protobuf/any.proto";
 import "google/protobuf/empty.proto";
 
 message Auction {
-    string ID = 1;
-    string Title = 2;
-    string Description = 3;
-    int64 OrganizerID = 4;
-    int32 MaxParticipants = 5;
-    int32 ParticipantsNumber = 6;
-    google.protobuf.Timestamp StartsAt = 7;
-    google.protobuf.Timestamp EndsAt = 8;   
+    string id = 1;
+    string title = 2;
+    string description = 3;
+    int64 organizerID = 4;
+    int32 max_participants = 5;
+    int32 participants_number = 6;
+    google.protobuf.Timestamp starts_at = 7;
+    google.protobuf.Timestamp ends_at = 8;   
     string Status = 9;
 };
 
 message Product{
-    string ID = 1;
-    string AuctionID = 2;
-    string Title = 3;
-    string Description = 4;
-    int64 StartPrice = 5;
-    map<string, google.protobuf.Any> Params = 6;
+    string id = 1;
+    string auction_id = 2;
+    string title = 3;
+    string description = 4;
+    int64 start_price = 5;
+    string category = 6;
+    map<string, google.protobuf.Any> params = 7;
 };
 
 message Response {
-    string Message = 1;
-    string Error = 2;
-    string ErrorCode = 3;
+    string message = 1;
+    string error = 2;
+    int64 error_code = 3;
 };
 
 
 message CreateAuctionRequest{
-    Auction Auction = 1;
+    Auction auction = 1;
 };
 
 message UpdateAuctionRequest {
-    Auction Auction = 1;
+    Auction auction = 1;
 };
 
 message CancelAuctionRequest {
-    string ID = 1;
+    string id = 1;
 };
 
 message AddParticipantRequest {
-    string AuctionID = 1;
-    string ParticipantID = 2;
+    string auction_id = 1;
+    string participant_id = 2;
 };
 
 message DeleteParticipantRequest {
-    string AuctionID = 1;
-    string ParticipantID = 2;
+    string auction_id = 1;
+    string participant_id = 2;
 };
 
 message AddProductRequest {
-    string AuctionID = 1;
-    Product Product = 2;
+    string auction_id = 1;
+    Product product = 2;
 };
 
 message UpdateProductRequest {
-    string AuctionID = 1;
-    Product Product = 2;
+    string auction_id = 1;
+    Product product = 2;
 };
 
 message DeletePoductRequest {
-    string AuctionID = 1;
-    string ProductID = 2;
+    string auction_id = 1;
+    string product_id = 2;
 };
 
 

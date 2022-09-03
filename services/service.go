@@ -17,16 +17,17 @@ type Service struct {
 	eventChan chan <- *models.Event
 }
 
-func NewService(r *repositories.Repository) *Service {
+func NewService(r *repositories.Repository, ch chan <- *models.Event) *Service {
 	return &Service{
 		repository: r,
+		eventChan: ch,
 	}
 }
 
 func (s *Service) CreateAuction(ctx context.Context, req *pb.CreateAuctionRequest) (*emptypb.Empty, error) {
 	//get command from configs
 	command := "CREATE_AUCTION"
-	req.Auction.ID= uuid.New().String()
+	req.Auction.Id= uuid.New().String()
 	err := s.repository.CreateAuction(ctx, req.Auction)
 	if err != nil{
 		return &emptypb.Empty{}, err
@@ -54,13 +55,13 @@ func (s *Service) UpdateAuction(ctx context.Context, req *pb.UpdateAuctionReques
 }
 func (s *Service) CancelAuction(ctx context.Context, req *pb.CancelAuctionRequest) (*emptypb.Empty, error) {
 	command := ""
-	err := s.repository.CancelAuction(ctx, req.ID)
+	err := s.repository.CancelAuction(ctx, req.Id)
 	if err != nil{
 		return &emptypb.Empty{}, err
 	}
 	event := models.Event{
 		Command: command,
-		Entity: req.ID,
+		Entity: req.Id,
 	}
 	s.eventChan <- &event
 	return &emptypb.Empty{}, nil
@@ -68,13 +69,13 @@ func (s *Service) CancelAuction(ctx context.Context, req *pb.CancelAuctionReques
 
 func (s *Service) AddParticipant(ctx context.Context, req *pb.AddParticipantRequest) (*emptypb.Empty, error) {
 	command := ""
-	err := s.repository.AddParticipant(ctx, req.AuctionID, req.ParticipantID)
+	err := s.repository.AddParticipant(ctx, req.AuctionId, req.ParticipantId)
 	if err != nil{
 		return &emptypb.Empty{}, err
 	}
 	event := models.Event{
 		Command: command,
-		Entity: map[string]interface{}{"auction_id":req.AuctionID, "participant_id":req.ParticipantID},
+		Entity: map[string]interface{}{"auction_id":req.AuctionId, "participant_id":req.ParticipantId},
 	}
 	s.eventChan <- &event
 	return &emptypb.Empty{}, nil
@@ -82,13 +83,13 @@ func (s *Service) AddParticipant(ctx context.Context, req *pb.AddParticipantRequ
 
 func (s *Service) DeleteParticipant(ctx context.Context, req *pb.DeleteParticipantRequest) (*emptypb.Empty, error) {
 	command := ""
-	err := s.repository.RemoveParticipant(ctx, req.AuctionID, req.ParticipantID)
+	err := s.repository.RemoveParticipant(ctx, req.AuctionId, req.ParticipantId)
 	if err != nil{
 		return &emptypb.Empty{}, err
 	}
 	event := models.Event{
 		Command: command,
-		Entity: map[string]interface{}{"auction_id":req.AuctionID, "participant_id":req.ParticipantID},
+		Entity: map[string]interface{}{"auction_id":req.AuctionId, "participant_id":req.ParticipantId},
 	}
 	s.eventChan <- &event
 	return &emptypb.Empty{}, nil
@@ -124,13 +125,13 @@ func (s *Service) UpdateProduct(ctx context.Context, req *pb.UpdateProductReques
 
 func (s *Service) DeleteProduct(ctx context.Context, req *pb.DeletePoductRequest) (*emptypb.Empty, error) {
 	command := ""
-	err := s.repository.DeleteProduct(ctx, req.ProductID)
+	err := s.repository.DeleteProduct(ctx, req.ProductId)
 	if err != nil{
 		return &emptypb.Empty{}, err
 	}
 	event := models.Event{
 		Command: command,
-		Entity: req.ProductID,
+		Entity: req.ProductId,
 	}
 	s.eventChan <- &event
 	return &emptypb.Empty{}, nil

@@ -33,7 +33,7 @@ func (r *Repository) CreateAuction(ctx context.Context, auction *pb.Auction) err
 		return err
 	}
 
-	_, err = tx.Exec(query, auction.ID, auction.Title, auction.Description, auction.OrganizerID, auction.MaxParticipants,
+	_, err = tx.Exec(query, auction.Id, auction.Title, auction.Description, auction.OrganizerID, auction.MaxParticipants,
 		auction.ParticipantsNumber, auction.StartsAt, auction.EndsAt, "WAITING")
 	if err != nil {
 		tx.Rollback()
@@ -143,7 +143,7 @@ func (r *Repository) AddProduct(ctx context.Context, product *pb.Product) error 
 
 	params := product.Params
 
-	_, err = tx.Exec(query, product.ID, product.AuctionID, product.Title, product.Description, product.StartPrice, params)
+	_, err = tx.Exec(query, product.Id, product.AuctionId, product.Title, product.Description, product.StartPrice, params)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -163,7 +163,7 @@ func (r *Repository) UpdateProduct(ctx context.Context, product *pb.Product) err
 		return err
 	}
 
-	_, err = tx.Exec(query, product.Title, product.Description, product.StartPrice, product.ID)
+	_, err = tx.Exec(query, product.Title, product.Description, product.StartPrice, product.Id)
 	if err != nil {
 		tx.Rollback()
 		return err
