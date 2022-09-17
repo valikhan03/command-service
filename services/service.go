@@ -41,7 +41,7 @@ func (s *Service) CreateAuction(ctx context.Context, req *pb.CreateAuctionReques
 }
 
 func (s *Service) UpdateAuction(ctx context.Context, req *pb.UpdateAuctionRequest) (*emptypb.Empty, error) {
-	command := ""
+	command := "UPDATE_AUCTION"
 	err := s.repository.UpdateAuction(ctx, req.Auction)
 	if err != nil{
 		return &emptypb.Empty{}, err
@@ -54,7 +54,7 @@ func (s *Service) UpdateAuction(ctx context.Context, req *pb.UpdateAuctionReques
 	return &emptypb.Empty{}, nil 
 }
 func (s *Service) CancelAuction(ctx context.Context, req *pb.CancelAuctionRequest) (*emptypb.Empty, error) {
-	command := ""
+	command := "CANCEL_AUCTION"
 	err := s.repository.CancelAuction(ctx, req.Id)
 	if err != nil{
 		return &emptypb.Empty{}, err
@@ -68,7 +68,7 @@ func (s *Service) CancelAuction(ctx context.Context, req *pb.CancelAuctionReques
 }
 
 func (s *Service) AddParticipant(ctx context.Context, req *pb.AddParticipantRequest) (*emptypb.Empty, error) {
-	command := ""
+	command := "ADD_PARTICIPANT"
 	err := s.repository.AddParticipant(ctx, req.AuctionId, req.ParticipantId)
 	if err != nil{
 		return &emptypb.Empty{}, err
@@ -82,7 +82,7 @@ func (s *Service) AddParticipant(ctx context.Context, req *pb.AddParticipantRequ
 }
 
 func (s *Service) DeleteParticipant(ctx context.Context, req *pb.DeleteParticipantRequest) (*emptypb.Empty, error) {
-	command := ""
+	command := "DELETE_PARTICIPANT"
 	err := s.repository.RemoveParticipant(ctx, req.AuctionId, req.ParticipantId)
 	if err != nil{
 		return &emptypb.Empty{}, err
@@ -96,7 +96,7 @@ func (s *Service) DeleteParticipant(ctx context.Context, req *pb.DeleteParticipa
 }
 
 func (s *Service) AddProduct(ctx context.Context, req *pb.AddProductRequest) (*emptypb.Empty, error) {
-	command := ""
+	command := "ADD_PRODUCT"
 	err := s.repository.AddProduct(ctx, req.Product)
 	if err != nil{
 		return &emptypb.Empty{}, err
@@ -110,7 +110,7 @@ func (s *Service) AddProduct(ctx context.Context, req *pb.AddProductRequest) (*e
 }
 
 func (s *Service) UpdateProduct(ctx context.Context, req *pb.UpdateProductRequest) (*emptypb.Empty, error) {
-	command := ""
+	command := "UPDATE_PRODUCT"
 	err := s.repository.UpdateProduct(ctx, req.Product)
 	if err != nil{
 		return &emptypb.Empty{}, err
@@ -124,7 +124,7 @@ func (s *Service) UpdateProduct(ctx context.Context, req *pb.UpdateProductReques
 }
 
 func (s *Service) DeleteProduct(ctx context.Context, req *pb.DeletePoductRequest) (*emptypb.Empty, error) {
-	command := ""
+	command := "DELETE_PRODUCT"
 	err := s.repository.DeleteProduct(ctx, req.ProductId)
 	if err != nil{
 		return &emptypb.Empty{}, err
