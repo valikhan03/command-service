@@ -37,3 +37,22 @@ func GetDBConfigs() *DBConfigs {
 	return &configs
 }
 
+type KafkaConfigs struct{
+	Brokers []string `yaml:"brokers"`
+}
+
+func GetKafkaConfigs() *KafkaConfigs {
+	data, err := ioutil.ReadFile("configs/kafka.yaml")
+	if err != nil{
+		log.Fatal(err)
+	}
+
+	var configs KafkaConfigs
+
+	err = yaml.Unmarshal(data, &configs)
+	if err != nil{
+		log.Fatal(err)
+	}
+
+	return &configs
+}
