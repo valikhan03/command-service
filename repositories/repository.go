@@ -5,6 +5,7 @@ import (
 	"database/sql"
 
 	"github.com/jmoiron/sqlx"
+	_ "github.com/jackc/pgx/stdlib"
 
 	"auctions-service/pb"
 )

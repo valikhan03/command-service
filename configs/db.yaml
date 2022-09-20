@@ -2,4 +2,4 @@ host: 127.0.0.1
 port: 5432
 user: postgres
 db_name: postgres
-ssl_mode: disabled
+ssl_mode: disable

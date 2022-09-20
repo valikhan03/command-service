@@ -25,7 +25,6 @@ func NewService(r *repositories.Repository, ch chan <- *models.Event) *Service {
 }
 
 func (s *Service) CreateAuction(ctx context.Context, req *pb.CreateAuctionRequest) (*emptypb.Empty, error) {
-	//get command from configs
 	command := "CREATE_AUCTION"
 	req.Auction.Id= uuid.New().String()
 	err := s.repository.CreateAuction(ctx, req.Auction)
