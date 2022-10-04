@@ -4,9 +4,6 @@ package protobuf;
 
 option go_package = "/pb";
 
-import "google/protobuf/timestamp.proto";
-import "google/protobuf/any.proto";
-import "google/protobuf/empty.proto";
 
 message Auction {
     string id = 1;
@@ -15,9 +12,8 @@ message Auction {
     int64 organizerID = 4;
     int32 max_participants = 5;
     int32 participants_number = 6;
-    google.protobuf.Timestamp starts_at = 7;
-    google.protobuf.Timestamp ends_at = 8;   
-    string Status = 9;
+    string starts_at = 7;
+    string ends_at = 8;   
 };
 
 message Product{
@@ -27,13 +23,13 @@ message Product{
     string description = 4;
     int64 start_price = 5;
     string category = 6;
-    map<string, google.protobuf.Any> params = 7;
+    map<string, string> params = 7;
 };
 
 message Response {
-    string message = 1;
-    string error = 2;
-    int64 error_code = 3;
+    string status = 1;
+    int32 error_code = 2;
+    string error = 3;
 };
 
 
@@ -45,7 +41,7 @@ message UpdateAuctionRequest {
     Auction auction = 1;
 };
 
-message CancelAuctionRequest {
+message DeleteAuctionRequest {
     string id = 1;
 };
 
@@ -76,12 +72,12 @@ message DeletePoductRequest {
 
 
 service AuctionsService{
-    rpc CreateAuction (CreateAuctionRequest) returns (google.protobuf.Empty) {};
-    rpc UpdateAuction (UpdateAuctionRequest) returns (google.protobuf.Empty) {};
-    rpc CancelAuction (CancelAuctionRequest) returns (google.protobuf.Empty) {};
-    rpc AddParticipant (AddParticipantRequest) returns (google.protobuf.Empty) {};
-    rpc DeleteParticipant (DeleteParticipantRequest) returns (google.protobuf.Empty) {};
-    rpc AddProduct (AddProductRequest) returns (google.protobuf.Empty) {};
-    rpc UpdateProduct (UpdateProductRequest) returns (google.protobuf.Empty) {};
-    rpc DeleteProduct (DeletePoductRequest) returns (google.protobuf.Empty) {};
+    rpc CreateAuction (CreateAuctionRequest) returns (Response) {};
+    rpc UpdateAuction (UpdateAuctionRequest) returns (Response) {};
+    rpc DeleteAuction (DeleteAuctionRequest) returns (Response) {};
+    rpc AddParticipant (AddParticipantRequest) returns (Response) {};
+    rpc DeleteParticipant (DeleteParticipantRequest) returns (Response) {};
+    rpc AddProduct (AddProductRequest) returns (Response) {};
+    rpc UpdateProduct (UpdateProductRequest) returns (Response) {};
+    rpc DeleteProduct (DeletePoductRequest) returns (Response) {};
 };

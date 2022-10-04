@@ -11,7 +11,6 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -23,14 +22,14 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuctionsServiceClient interface {
-	CreateAuction(ctx context.Context, in *CreateAuctionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	UpdateAuction(ctx context.Context, in *UpdateAuctionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	CancelAuction(ctx context.Context, in *CancelAuctionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	AddParticipant(ctx context.Context, in *AddParticipantRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	DeleteParticipant(ctx context.Context, in *DeleteParticipantRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	AddProduct(ctx context.Context, in *AddProductRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	UpdateProduct(ctx context.Context, in *UpdateProductRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	DeleteProduct(ctx context.Context, in *DeletePoductRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	CreateAuction(ctx context.Context, in *CreateAuctionRequest, opts ...grpc.CallOption) (*Response, error)
+	UpdateAuction(ctx context.Context, in *UpdateAuctionRequest, opts ...grpc.CallOption) (*Response, error)
+	DeleteAuction(ctx context.Context, in *DeleteAuctionRequest, opts ...grpc.CallOption) (*Response, error)
+	AddParticipant(ctx context.Context, in *AddParticipantRequest, opts ...grpc.CallOption) (*Response, error)
+	DeleteParticipant(ctx context.Context, in *DeleteParticipantRequest, opts ...grpc.CallOption) (*Response, error)
+	AddProduct(ctx context.Context, in *AddProductRequest, opts ...grpc.CallOption) (*Response, error)
+	UpdateProduct(ctx context.Context, in *UpdateProductRequest, opts ...grpc.CallOption) (*Response, error)
+	DeleteProduct(ctx context.Context, in *DeletePoductRequest, opts ...grpc.CallOption) (*Response, error)
 }
 
 type auctionsServiceClient struct {
@@ -41,8 +40,8 @@ func NewAuctionsServiceClient(cc grpc.ClientConnInterface) AuctionsServiceClient
 	return &auctionsServiceClient{cc}
 }
 
-func (c *auctionsServiceClient) CreateAuction(ctx context.Context, in *CreateAuctionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *auctionsServiceClient) CreateAuction(ctx context.Context, in *CreateAuctionRequest, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
 	err := c.cc.Invoke(ctx, "/protobuf.AuctionsService/CreateAuction", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -50,8 +49,8 @@ func (c *auctionsServiceClient) CreateAuction(ctx context.Context, in *CreateAuc
 	return out, nil
 }
 
-func (c *auctionsServiceClient) UpdateAuction(ctx context.Context, in *UpdateAuctionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *auctionsServiceClient) UpdateAuction(ctx context.Context, in *UpdateAuctionRequest, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
 	err := c.cc.Invoke(ctx, "/protobuf.AuctionsService/UpdateAuction", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -59,17 +58,17 @@ func (c *auctionsServiceClient) UpdateAuction(ctx context.Context, in *UpdateAuc
 	return out, nil
 }
 
-func (c *auctionsServiceClient) CancelAuction(ctx context.Context, in *CancelAuctionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/protobuf.AuctionsService/CancelAuction", in, out, opts...)
+func (c *auctionsServiceClient) DeleteAuction(ctx context.Context, in *DeleteAuctionRequest, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
+	err := c.cc.Invoke(ctx, "/protobuf.AuctionsService/DeleteAuction", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *auctionsServiceClient) AddParticipant(ctx context.Context, in *AddParticipantRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *auctionsServiceClient) AddParticipant(ctx context.Context, in *AddParticipantRequest, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
 	err := c.cc.Invoke(ctx, "/protobuf.AuctionsService/AddParticipant", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -77,8 +76,8 @@ func (c *auctionsServiceClient) AddParticipant(ctx context.Context, in *AddParti
 	return out, nil
 }
 
-func (c *auctionsServiceClient) DeleteParticipant(ctx context.Context, in *DeleteParticipantRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *auctionsServiceClient) DeleteParticipant(ctx context.Context, in *DeleteParticipantRequest, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
 	err := c.cc.Invoke(ctx, "/protobuf.AuctionsService/DeleteParticipant", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -86,8 +85,8 @@ func (c *auctionsServiceClient) DeleteParticipant(ctx context.Context, in *Delet
 	return out, nil
 }
 
-func (c *auctionsServiceClient) AddProduct(ctx context.Context, in *AddProductRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *auctionsServiceClient) AddProduct(ctx context.Context, in *AddProductRequest, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
 	err := c.cc.Invoke(ctx, "/protobuf.AuctionsService/AddProduct", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -95,8 +94,8 @@ func (c *auctionsServiceClient) AddProduct(ctx context.Context, in *AddProductRe
 	return out, nil
 }
 
-func (c *auctionsServiceClient) UpdateProduct(ctx context.Context, in *UpdateProductRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *auctionsServiceClient) UpdateProduct(ctx context.Context, in *UpdateProductRequest, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
 	err := c.cc.Invoke(ctx, "/protobuf.AuctionsService/UpdateProduct", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -104,8 +103,8 @@ func (c *auctionsServiceClient) UpdateProduct(ctx context.Context, in *UpdatePro
 	return out, nil
 }
 
-func (c *auctionsServiceClient) DeleteProduct(ctx context.Context, in *DeletePoductRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *auctionsServiceClient) DeleteProduct(ctx context.Context, in *DeletePoductRequest, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
 	err := c.cc.Invoke(ctx, "/protobuf.AuctionsService/DeleteProduct", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -117,43 +116,42 @@ func (c *auctionsServiceClient) DeleteProduct(ctx context.Context, in *DeletePod
 // All implementations must embed UnimplementedAuctionsServiceServer
 // for forward compatibility
 type AuctionsServiceServer interface {
-	CreateAuction(context.Context, *CreateAuctionRequest) (*emptypb.Empty, error)
-	UpdateAuction(context.Context, *UpdateAuctionRequest) (*emptypb.Empty, error)
-	CancelAuction(context.Context, *CancelAuctionRequest) (*emptypb.Empty, error)
-	AddParticipant(context.Context, *AddParticipantRequest) (*emptypb.Empty, error)
-	DeleteParticipant(context.Context, *DeleteParticipantRequest) (*emptypb.Empty, error)
-	AddProduct(context.Context, *AddProductRequest) (*emptypb.Empty, error)
-	UpdateProduct(context.Context, *UpdateProductRequest) (*emptypb.Empty, error)
-	DeleteProduct(context.Context, *DeletePoductRequest) (*emptypb.Empty, error)
-	//mustEmbedUnimplementedAuctionsServiceServer()
+	CreateAuction(context.Context, *CreateAuctionRequest) (*Response, error)
+	UpdateAuction(context.Context, *UpdateAuctionRequest) (*Response, error)
+	DeleteAuction(context.Context, *DeleteAuctionRequest) (*Response, error)
+	AddParticipant(context.Context, *AddParticipantRequest) (*Response, error)
+	DeleteParticipant(context.Context, *DeleteParticipantRequest) (*Response, error)
+	AddProduct(context.Context, *AddProductRequest) (*Response, error)
+	UpdateProduct(context.Context, *UpdateProductRequest) (*Response, error)
+	DeleteProduct(context.Context, *DeletePoductRequest) (*Response, error)
 }
 
 // UnimplementedAuctionsServiceServer must be embedded to have forward compatible implementations.
 type UnimplementedAuctionsServiceServer struct {
 }
 
-func (UnimplementedAuctionsServiceServer) CreateAuction(context.Context, *CreateAuctionRequest) (*emptypb.Empty, error) {
+func (UnimplementedAuctionsServiceServer) CreateAuction(context.Context, *CreateAuctionRequest) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateAuction not implemented")
 }
-func (UnimplementedAuctionsServiceServer) UpdateAuction(context.Context, *UpdateAuctionRequest) (*emptypb.Empty, error) {
+func (UnimplementedAuctionsServiceServer) UpdateAuction(context.Context, *UpdateAuctionRequest) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateAuction not implemented")
 }
-func (UnimplementedAuctionsServiceServer) CancelAuction(context.Context, *CancelAuctionRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CancelAuction not implemented")
+func (UnimplementedAuctionsServiceServer) DeleteAuction(context.Context, *DeleteAuctionRequest) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteAuction not implemented")
 }
-func (UnimplementedAuctionsServiceServer) AddParticipant(context.Context, *AddParticipantRequest) (*emptypb.Empty, error) {
+func (UnimplementedAuctionsServiceServer) AddParticipant(context.Context, *AddParticipantRequest) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddParticipant not implemented")
 }
-func (UnimplementedAuctionsServiceServer) DeleteParticipant(context.Context, *DeleteParticipantRequest) (*emptypb.Empty, error) {
+func (UnimplementedAuctionsServiceServer) DeleteParticipant(context.Context, *DeleteParticipantRequest) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteParticipant not implemented")
 }
-func (UnimplementedAuctionsServiceServer) AddProduct(context.Context, *AddProductRequest) (*emptypb.Empty, error) {
+func (UnimplementedAuctionsServiceServer) AddProduct(context.Context, *AddProductRequest) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddProduct not implemented")
 }
-func (UnimplementedAuctionsServiceServer) UpdateProduct(context.Context, *UpdateProductRequest) (*emptypb.Empty, error) {
+func (UnimplementedAuctionsServiceServer) UpdateProduct(context.Context, *UpdateProductRequest) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateProduct not implemented")
 }
-func (UnimplementedAuctionsServiceServer) DeleteProduct(context.Context, *DeletePoductRequest) (*emptypb.Empty, error) {
+func (UnimplementedAuctionsServiceServer) DeleteProduct(context.Context, *DeletePoductRequest) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteProduct not implemented")
 }
 func (UnimplementedAuctionsServiceServer) mustEmbedUnimplementedAuctionsServiceServer() {}
@@ -205,20 +203,20 @@ func _AuctionsService_UpdateAuction_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AuctionsService_CancelAuction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CancelAuctionRequest)
+func _AuctionsService_DeleteAuction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteAuctionRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AuctionsServiceServer).CancelAuction(ctx, in)
+		return srv.(AuctionsServiceServer).DeleteAuction(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/protobuf.AuctionsService/CancelAuction",
+		FullMethod: "/protobuf.AuctionsService/DeleteAuction",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuctionsServiceServer).CancelAuction(ctx, req.(*CancelAuctionRequest))
+		return srv.(AuctionsServiceServer).DeleteAuction(ctx, req.(*DeleteAuctionRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -329,8 +327,8 @@ var AuctionsService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AuctionsService_UpdateAuction_Handler,
 		},
 		{
-			MethodName: "CancelAuction",
-			Handler:    _AuctionsService_CancelAuction_Handler,
+			MethodName: "DeleteAuction",
+			Handler:    _AuctionsService_DeleteAuction_Handler,
 		},
 		{
 			MethodName: "AddParticipant",
