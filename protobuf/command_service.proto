@@ -16,8 +16,8 @@ message Auction {
     string ends_at = 8;   
 };
 
-message Product{
-    string id = 1;
+message Lot{
+    int32 id = 1;
     string auction_id = 2;
     string title = 3;
     string description = 4;
@@ -47,37 +47,37 @@ message DeleteAuctionRequest {
 
 message AddParticipantRequest {
     string auction_id = 1;
-    string participant_id = 2;
+    int32 participant_id = 2;
 };
 
 message DeleteParticipantRequest {
     string auction_id = 1;
-    string participant_id = 2;
+    int32 participant_id = 2;
 };
 
-message AddProductRequest {
+message AddLotRequest {
     string auction_id = 1;
-    Product product = 2;
+    Lot lot = 2;
 };
 
-message UpdateProductRequest {
+message UpdateLotRequest {
     string auction_id = 1;
-    Product product = 2;
+    Lot lot = 2;
 };
 
-message DeletePoductRequest {
+message DeleteLotRequest {
     string auction_id = 1;
-    string product_id = 2;
+    string lot_id = 2;
 };
 
 
-service AuctionsService{
+service CommandService{
     rpc CreateAuction (CreateAuctionRequest) returns (Response) {};
     rpc UpdateAuction (UpdateAuctionRequest) returns (Response) {};
     rpc DeleteAuction (DeleteAuctionRequest) returns (Response) {};
     rpc AddParticipant (AddParticipantRequest) returns (Response) {};
     rpc DeleteParticipant (DeleteParticipantRequest) returns (Response) {};
-    rpc AddProduct (AddProductRequest) returns (Response) {};
-    rpc UpdateProduct (UpdateProductRequest) returns (Response) {};
-    rpc DeleteProduct (DeletePoductRequest) returns (Response) {};
+    rpc AddLot (AddLotRequest) returns (Response) {};
+    rpc UpdateLot (UpdateLotRequest) returns (Response) {};
+    rpc DeleteLot (DeleteLotRequest) returns (Response) {};
 };

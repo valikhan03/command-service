@@ -3,11 +3,10 @@ package services
 import (
 	"context"
 
-	"auctions-service/models"
-	"auctions-service/pb"
-	"auctions-service/repositories"
+	"github.com/valikhan03/command-service/models"
+	"github.com/valikhan03/command-service/pb"
+	"github.com/valikhan03/command-service/repositories"
 
-	uuid "github.com/lithammer/shortuuid"
 	"github.com/valikhan03/tool"
 )
 
@@ -24,11 +23,11 @@ func NewService(r *repositories.Repository, ch chan<- *models.Event) *Service {
 }
 
 func (s *Service) CreateAuction(ctx context.Context, req *pb.CreateAuctionRequest) (*pb.Response, error) {
-	req.Auction.Id = uuid.New()
-	err := s.repository.CreateAuction(ctx, req.Auction)
+	id, err := s.repository.CreateAuction(ctx, req.Auction)
 	if err != nil {
 		return &pb.Response{}, err
 	}
+	req.Auction.Id = id
 	event := models.Event{
 		Command: tool.CRE_AUC_EVENT,
 		Entity:  req.Auction,
@@ -89,40 +88,40 @@ func (s *Service) DeleteParticipant(ctx context.Context, req *pb.DeleteParticipa
 	return &pb.Response{}, nil
 }
 
-func (s *Service) AddProduct(ctx context.Context, req *pb.AddProductRequest) (*pb.Response, error) {
-	err := s.repository.AddProduct(ctx, req.Product)
+func (s *Service) AddLot(ctx context.Context, req *pb.AddLotRequest) (*pb.Response, error) {
+	err := s.repository.AddLot(ctx, req.Lot)
 	if err != nil {
 		return &pb.Response{}, err
 	}
 	event := models.Event{
 		Command: tool.ADD_LOT_EVENT,
-		Entity:  req.Product,
+		Entity:  req.Lot,
 	}
 	s.eventChan <- &event
 	return &pb.Response{}, nil
 }
 
-func (s *Service) UpdateProduct(ctx context.Context, req *pb.UpdateProductRequest) (*pb.Response, error) {
-	err := s.repository.UpdateProduct(ctx, req.Product)
+func (s *Service) UpdateLot(ctx context.Context, req *pb.UpdateLotRequest) (*pb.Response, error) {
+	err := s.repository.UpdateLot(ctx, req.Lot)
 	if err != nil {
 		return &pb.Response{}, err
 	}
 	event := models.Event{
 		Command: tool.UPD_LOT_EVENT,
-		Entity:  req.Product,
+		Entity:  req.Lot,
 	}
 	s.eventChan <- &event
 	return &pb.Response{}, nil
 }
 
-func (s *Service) DeleteProduct(ctx context.Context, req *pb.DeletePoductRequest) (*pb.Response, error) {
-	err := s.repository.DeleteProduct(ctx, req.ProductId)
+func (s *Service) DeleteLot(ctx context.Context, req *pb.DeleteLotRequest) (*pb.Response, error) {
+	err := s.repository.DeleteLot(ctx, req.LotId)
 	if err != nil {
 		return &pb.Response{}, err
 	}
 	event := models.Event{
 		Command: tool.DEL_LOT_EVENT,
-		Entity:  req.ProductId,
+		Entity:  req.LotId,
 	}
 	s.eventChan <- &event
 	return &pb.Response{}, nil

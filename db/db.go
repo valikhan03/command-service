@@ -1,23 +1,23 @@
 package db
 
-import(
+import (
 	"fmt"
 	"log"
 
-	"github.com/jmoiron/sqlx"
 	_ "github.com/jackc/pgx/stdlib"
+	"github.com/jmoiron/sqlx"
 
-	"auctions-service/models"
+	"github.com/valikhan03/command-service/models"
 )
 
 func InitDatabase() *sqlx.DB {
 	configs := models.GetDBConfigs()
-	connStr := fmt.Sprintf("host=%s, port=%s, user=%s, name=%s, password=%s, sslmode=%s", 
+	connStr := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=%s",
 		configs.Host, configs.Port, configs.User, configs.DBName, configs.Password, configs.SSLMode)
-	
+
 	db, err := sqlx.Connect("pgx", connStr)
-	if err != nil{
-		log.Fatal(err)
+	if err != nil {
+		log.Fatalf("DB connect error: %s", err.Error())
 	}
 
 	return db

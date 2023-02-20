@@ -5,10 +5,11 @@ import (
 	"database/sql"
 	"encoding/json"
 
+	"github.com/google/uuid"
 	_ "github.com/jackc/pgx/stdlib"
 	"github.com/jmoiron/sqlx"
 
-	"auctions-service/pb"
+	"github.com/valikhan03/command-service/pb"
 )
 
 type Repository struct {
@@ -21,36 +22,36 @@ func NewRepository(db *sqlx.DB) *Repository {
 	}
 }
 
-func (r *Repository) CreateAuction(ctx context.Context, auction *pb.Auction) error {
+func (r *Repository) CreateAuction(ctx context.Context, auction *pb.Auction) (string, error) {
 	query := `
 		INSERT INTO tb_auctions
-			(id, title, description, organizer_id, max_participants, participants_num, starts_at, ends_at)
+			(id, title, description, organizer_id, max_participants, participants_number, starts_at, ends_at)
 		VALUES 
 			($1, $2, $3, $4, $5, $6, $7, $8) 
 	`
-
+	newid := uuid.New()
 	tx, err := r.db.BeginTxx(ctx, &sql.TxOptions{})
 	if err != nil {
 		tx.Rollback()
-		return err
+		return "", err
 	}
 
-	_, err = tx.Exec(query, auction.Id, auction.Title, auction.Description, auction.OrganizerID, auction.MaxParticipants,
+	_, err = tx.Exec(query, newid, auction.Title, auction.Description, auction.OrganizerID, auction.MaxParticipants,
 		auction.ParticipantsNumber, auction.StartsAt, auction.EndsAt)
 	if err != nil {
 		tx.Rollback()
-		return err
+		return "", err
 	}
 
 	tx.Commit()
-	return nil
+	return newid.String(), nil
 }
 
 func (r *Repository) UpdateAuction(ctx context.Context, auction *pb.Auction) error {
 	query := `
 		UPDATE tb_auctions 
 		SET 
-		title=$1, description=$2, organizer=$3, max_participants=$4, participants_num=$5, starts_at=$6, ends_at=$7
+		title=$1, description=$2, organizer_id=$3, max_participants=$4, participants_number=$5, starts_at=$6, ends_at=$7
 		WHERE id=$8
 	`
 
@@ -60,8 +61,8 @@ func (r *Repository) UpdateAuction(ctx context.Context, auction *pb.Auction) err
 		return err
 	}
 
-	_, err = tx.Exec(query, auction.Title, auction.Description, auction.OrganizerID, auction.MaxParticipants, 
-		auction.ParticipantsNumber, auction.StartsAt, auction.EndsAt)
+	_, err = tx.Exec(query, auction.Title, auction.Description, auction.OrganizerID, auction.MaxParticipants,
+		auction.ParticipantsNumber, auction.StartsAt, auction.EndsAt, auction.Id)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -72,7 +73,7 @@ func (r *Repository) UpdateAuction(ctx context.Context, auction *pb.Auction) err
 }
 
 func (r *Repository) DeleteAuction(ctx context.Context, id string) error {
-	query := `DELETE from tb_auctions WHERE id=$2`
+	query := `DELETE from tb_auctions WHERE id=$1`
 
 	tx, err := r.db.BeginTxx(ctx, &sql.TxOptions{})
 	if err != nil {
@@ -80,18 +81,18 @@ func (r *Repository) DeleteAuction(ctx context.Context, id string) error {
 		return err
 	}
 
-	_, err = tx.Exec(query, "", id)
+	_, err = tx.Exec(query, id)
 	if err != nil {
 		tx.Rollback()
 		return err
 	}
 
+	tx.Commit()
 	return nil
 }
 
-
-func (r *Repository) AddParticipant(ctx context.Context, auction_id, participant_id string) error {
-	query := `INSERT INTO tb_participants (auction_id, participant_id) VALUES ($1, $2)`
+func (r *Repository) AddParticipant(ctx context.Context, auction_id string, participant_id int32) error {
+	query := `INSERT INTO tb_participants (auction_id, user_id) VALUES ($1, $2)`
 
 	tx, err := r.db.BeginTxx(ctx, &sql.TxOptions{})
 	if err != nil {
@@ -108,8 +109,8 @@ func (r *Repository) AddParticipant(ctx context.Context, auction_id, participant
 	return nil
 }
 
-func (r *Repository) RemoveParticipant(ctx context.Context, auction_id, participant_id string) error {
-	query := `DELETE FROM tb_participants WHERE auction_id=$1 AND participant_id=$2`
+func (r *Repository) RemoveParticipant(ctx context.Context, auction_id string, participant_id int32) error {
+	query := `DELETE FROM tb_participants WHERE auction_id=$1 AND user_id=$2`
 
 	tx, err := r.db.BeginTxx(ctx, &sql.TxOptions{})
 	if err != nil {
@@ -126,12 +127,12 @@ func (r *Repository) RemoveParticipant(ctx context.Context, auction_id, particip
 	return nil
 }
 
-func (r *Repository) AddProduct(ctx context.Context, product *pb.Product) error {
+func (r *Repository) AddLot(ctx context.Context, lot *pb.Lot) error {
 	query := `
-		INSERT INTO tb_products 
-			(id, auction_id, title, description, start_price, params)
+		INSERT INTO tb_lots 
+			(auction_id, title, description, start_price, params)
 		VALUES
-			($1, $2, $3, $4, $5, $6)
+			($1, $2, $3, $4, $5)
 	`
 
 	tx, err := r.db.BeginTxx(ctx, &sql.TxOptions{})
@@ -139,10 +140,10 @@ func (r *Repository) AddProduct(ctx context.Context, product *pb.Product) error 
 		return err
 	}
 
-	var product_params json.RawMessage
-	product_params, err = json.Marshal(product.Params)
+	var lot_params json.RawMessage
+	lot_params, err = json.Marshal(lot.Params)
 
-	_, err = tx.Exec(query, product.Id, product.AuctionId, product.Title, product.Description, product.StartPrice, product_params)
+	_, err = tx.Exec(query, lot.AuctionId, lot.Title, lot.Description, lot.StartPrice, lot_params)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -152,9 +153,9 @@ func (r *Repository) AddProduct(ctx context.Context, product *pb.Product) error 
 	return nil
 }
 
-func (r *Repository) UpdateProduct(ctx context.Context, product *pb.Product) error {
+func (r *Repository) UpdateLot(ctx context.Context, lot *pb.Lot) error {
 	query := `
-		UPDATE tb_products SET title=$1, description=$2, start_price=$3, params=$4 WHERE id=$5
+		UPDATE tb_lots SET title=$1, description=$2, start_price=$3, params=$4 WHERE id=$5
 	`
 
 	tx, err := r.db.BeginTxx(ctx, &sql.TxOptions{})
@@ -162,10 +163,10 @@ func (r *Repository) UpdateProduct(ctx context.Context, product *pb.Product) err
 		return err
 	}
 
-	var product_params json.RawMessage
-	product_params, err = json.Marshal(product.Params)
+	var lot_params json.RawMessage
+	lot_params, err = json.Marshal(lot.Params)
 
-	_, err = tx.Exec(query, product.Title, product.Description, product.StartPrice, product_params, product.Id)
+	_, err = tx.Exec(query, lot.Title, lot.Description, lot.StartPrice, lot_params, lot.Id)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -175,13 +176,19 @@ func (r *Repository) UpdateProduct(ctx context.Context, product *pb.Product) err
 	return nil
 }
 
-func (r *Repository) DeleteProduct(ctx context.Context, id string) error {
-	query := `DELETE FROM tb_products WHERE id=$1`
+func (r *Repository) DeleteLot(ctx context.Context, id string) error {
+	query := `DELETE FROM tb_lots WHERE id=$1`
 
-	_, err := r.db.ExecContext(ctx, query, id)
+	tx, err := r.db.BeginTxx(ctx, &sql.TxOptions{})
+	if err != nil{
+		return err
+	}
+	_, err = tx.ExecContext(ctx, query, id)
 	if err != nil {
+		tx.Rollback()
 		return err
 	}
 
+	tx.Commit()
 	return nil
 }

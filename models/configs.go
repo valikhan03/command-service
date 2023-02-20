@@ -9,27 +9,27 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type DBConfigs struct{
-	Host string `yaml:"host"`
-	Port string `yaml:"port"`
-	DBName string `yaml:"db_name"`
-	User string `yaml:"user"`
+type DBConfigs struct {
+	Host     string `yaml:"host"`
+	Port     string `yaml:"port"`
+	DBName   string `yaml:"db_name"`
+	User     string `yaml:"user"`
 	Password string `yaml:"-"`
-	SSLMode string	`yaml:"ssl_mode"`
+	SSLMode  string `yaml:"ssl_mode"`
 }
 
 func GetDBConfigs() *DBConfigs {
 	godotenv.Load()
-	
+
 	data, err := ioutil.ReadFile("configs/db.yaml")
-	if err != nil{
+	if err != nil {
 		log.Fatal(err)
 	}
 
 	var configs DBConfigs
 
 	err = yaml.Unmarshal(data, &configs)
-	if err != nil{
+	if err != nil {
 		log.Fatal(err)
 	}
 
@@ -37,20 +37,21 @@ func GetDBConfigs() *DBConfigs {
 	return &configs
 }
 
-type KafkaConfigs struct{
+type KafkaConfigs struct {
 	Brokers []string `yaml:"brokers"`
+	Topic   string   `yaml:"topic"`
 }
 
 func GetKafkaConfigs() *KafkaConfigs {
 	data, err := ioutil.ReadFile("configs/kafka.yaml")
-	if err != nil{
+	if err != nil {
 		log.Fatal(err)
 	}
 
 	var configs KafkaConfigs
 
 	err = yaml.Unmarshal(data, &configs)
-	if err != nil{
+	if err != nil {
 		log.Fatal(err)
 	}
 
