@@ -4,6 +4,11 @@ package protobuf;
 
 option go_package = "/pb";
 
+message Attempt_Requirements {
+    int32 approve_required = 1;
+    int32 enter_fee_required = 2;
+    int64 enter_fee_amount = 3;
+};
 
 message Auction {
     string id = 1;
@@ -13,7 +18,9 @@ message Auction {
     int32 max_participants = 5;
     int32 participants_number = 6;
     string starts_at = 7;
-    string ends_at = 8;   
+    string ends_at = 8;
+    Attempt_Requirements Attempt_Requirements = 9;
+    int32 type = 10;
 };
 
 message Lot{
@@ -24,6 +31,15 @@ message Lot{
     int64 start_price = 5;
     string category = 6;
     map<string, string> params = 7;
+};
+
+
+message MediaInfo {
+    string user_id = 1;
+    string auction_id = 2;
+    int32 lot_id = 3;
+    string media_type = 4;
+    string media_name = 5;
 };
 
 message Response {
@@ -56,18 +72,21 @@ message DeleteParticipantRequest {
 };
 
 message AddLotRequest {
-    string auction_id = 1;
-    Lot lot = 2;
+    Lot lot = 1;
 };
 
 message UpdateLotRequest {
-    string auction_id = 1;
-    Lot lot = 2;
+    Lot lot = 1;
 };
 
 message DeleteLotRequest {
     string auction_id = 1;
     string lot_id = 2;
+};
+
+message UploadMediaRequest {
+    MediaInfo media_info = 1;
+    bytes media_chunk = 2;
 };
 
 
@@ -80,4 +99,5 @@ service CommandService{
     rpc AddLot (AddLotRequest) returns (Response) {};
     rpc UpdateLot (UpdateLotRequest) returns (Response) {};
     rpc DeleteLot (DeleteLotRequest) returns (Response) {};
+    rpc UploadMedia (stream UploadMediaRequest) returns (Response) {};
 };

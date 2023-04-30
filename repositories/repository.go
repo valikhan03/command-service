@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 
 	"github.com/google/uuid"
 	_ "github.com/jackc/pgx/stdlib"
@@ -43,6 +44,16 @@ func (r *Repository) CreateAuction(ctx context.Context, auction *pb.Auction) (st
 		return "", err
 	}
 
+	query = `INSERT INTO tb_attempt_requirements 
+				(auction_id, approve_required, enter_fee_required, enter_fee_payment)
+			VALUES
+				($1, $2, $3, $4)`
+	_, err = tx.Exec(query, newid, auction.Attempt_Requirements.ApproveRequired, auction.Attempt_Requirements.EnterFeeRequired, auction.Attempt_Requirements.EnterFeeAmount)
+	if err != nil {
+		tx.Rollback()
+		return "", err
+	}
+
 	tx.Commit()
 	return newid.String(), nil
 }
@@ -51,7 +62,8 @@ func (r *Repository) UpdateAuction(ctx context.Context, auction *pb.Auction) err
 	query := `
 		UPDATE tb_auctions 
 		SET 
-		title=$1, description=$2, organizer_id=$3, max_participants=$4, participants_number=$5, starts_at=$6, ends_at=$7
+		title=$1, description=$2, organizer_id=$3, max_participants=$4, 
+		participants_number=$5, starts_at=$6, ends_at=$7
 		WHERE id=$8
 	`
 
@@ -91,22 +103,50 @@ func (r *Repository) DeleteAuction(ctx context.Context, id string) error {
 	return nil
 }
 
-func (r *Repository) AddParticipant(ctx context.Context, auction_id string, participant_id int32) error {
-	query := `INSERT INTO tb_participants (auction_id, user_id) VALUES ($1, $2)`
+func (r *Repository) AddParticipant(ctx context.Context, auction_id string, participant_id int32) (bool, error) {
+	query := `SELECT approve_required, enter_fee_required, enter_fee_amount 
+				FROM tb_attempt_requirements WHERE auction_id=$1`
 
 	tx, err := r.db.BeginTxx(ctx, &sql.TxOptions{})
 	if err != nil {
-		return err
+		return false, err
 	}
+	var requirements map[string]int 
+
+	rows, err := tx.Query(query, auction_id)
+	if err != nil {
+		tx.Rollback()
+		return false, err
+	}
+	for rows.Next() {
+		err = rows.Scan(&requirements)
+		if err != nil {
+			tx.Rollback()
+			return false, err
+		}
+	}
+
+	if requirements["approve_required"] == 1 || requirements["enter_fee_amount"] == 1{
+		query = `INSERT INTO tb_attempt_requests (auction_id, user_id) VALUES ($1, $2)`
+		_, err = tx.Exec(query, auction_id, participant_id)
+		if err != nil{
+			tx.Rollback()
+			return false, err
+		}
+		return true, nil
+	}
+
+	
+	query = `INSERT INTO tb_participants (auction_id, user_id) VALUES ($1, $2)`
 
 	_, err = tx.Exec(query, auction_id, participant_id)
 	if err != nil {
 		tx.Rollback()
-		return err
+		return false, err
 	}
 
 	tx.Commit()
-	return nil
+	return false, nil
 }
 
 func (r *Repository) RemoveParticipant(ctx context.Context, auction_id string, participant_id int32) error {
@@ -127,30 +167,39 @@ func (r *Repository) RemoveParticipant(ctx context.Context, auction_id string, p
 	return nil
 }
 
-func (r *Repository) AddLot(ctx context.Context, lot *pb.Lot) error {
+func (r *Repository) AddLot(ctx context.Context, lot *pb.Lot) (int, error) {
 	query := `
 		INSERT INTO tb_lots 
 			(auction_id, title, description, start_price, params)
 		VALUES
-			($1, $2, $3, $4, $5)
+			($1, $2, $3, $4, $5) 
+		RETURNING ID
 	`
 
 	tx, err := r.db.BeginTxx(ctx, &sql.TxOptions{})
 	if err != nil {
-		return err
+		return -1, err
 	}
 
 	var lot_params json.RawMessage
 	lot_params, err = json.Marshal(lot.Params)
 
-	_, err = tx.Exec(query, lot.AuctionId, lot.Title, lot.Description, lot.StartPrice, lot_params)
+	rows, err := tx.Query(query, lot.AuctionId, lot.Title, lot.Description, lot.StartPrice, lot_params)
 	if err != nil {
 		tx.Rollback()
-		return err
+		return -1, err
 	}
+	defer rows.Close()
 
+	var id int = 0
+	if rows.Next() {
+		rows.Scan(&id)
+	} else {
+		tx.Rollback()
+		return -1, errors.New("No lot id returned from DB ")
+	}
 	tx.Commit()
-	return nil
+	return id, nil
 }
 
 func (r *Repository) UpdateLot(ctx context.Context, lot *pb.Lot) error {
@@ -180,7 +229,7 @@ func (r *Repository) DeleteLot(ctx context.Context, id string) error {
 	query := `DELETE FROM tb_lots WHERE id=$1`
 
 	tx, err := r.db.BeginTxx(ctx, &sql.TxOptions{})
-	if err != nil{
+	if err != nil {
 		return err
 	}
 	_, err = tx.ExecContext(ctx, query, id)
@@ -190,5 +239,9 @@ func (r *Repository) DeleteLot(ctx context.Context, id string) error {
 	}
 
 	tx.Commit()
+	return nil
+}
+
+func (r *Repository) AddMediaInfo(ctx context.Context, mediaInfo *pb.MediaInfo) error {
 	return nil
 }

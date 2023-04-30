@@ -56,17 +56,23 @@ func (s *Service) DeleteAuction(ctx context.Context, req *pb.DeleteAuctionReques
 	}
 	event := models.Event{
 		Command: tool.DEL_AUC_EVENT,
-		Entity:  req.Id,
+		Entity:  map[string]interface{}{"id":req.Id},
 	}
 	s.eventChan <- &event
 	return &pb.Response{}, nil
 }
 
 func (s *Service) AddParticipant(ctx context.Context, req *pb.AddParticipantRequest) (*pb.Response, error) {
-	err := s.repository.AddParticipant(ctx, req.AuctionId, req.ParticipantId)
+	requirements, err := s.repository.AddParticipant(ctx, req.AuctionId, req.ParticipantId)
 	if err != nil {
 		return &pb.Response{}, err
 	}
+	if requirements {
+		return &pb.Response{
+			Status: "",
+		}, nil
+	}
+	
 	event := models.Event{
 		Command: tool.ADD_PAR_EVENT,
 		Entity:  map[string]interface{}{"auction_id": req.AuctionId, "participant_id": req.ParticipantId},
@@ -89,10 +95,12 @@ func (s *Service) DeleteParticipant(ctx context.Context, req *pb.DeleteParticipa
 }
 
 func (s *Service) AddLot(ctx context.Context, req *pb.AddLotRequest) (*pb.Response, error) {
-	err := s.repository.AddLot(ctx, req.Lot)
+	id, err := s.repository.AddLot(ctx, req.Lot)
 	if err != nil {
 		return &pb.Response{}, err
 	}
+
+	req.Lot.Id = int32(id)
 	event := models.Event{
 		Command: tool.ADD_LOT_EVENT,
 		Entity:  req.Lot,
@@ -125,4 +133,24 @@ func (s *Service) DeleteLot(ctx context.Context, req *pb.DeleteLotRequest) (*pb.
 	}
 	s.eventChan <- &event
 	return &pb.Response{}, nil
+}
+
+func (s *Service) UploadMedia(stream pb.CommandService_UploadMediaServer) error {
+	var mediaInfo *pb.MediaInfo
+
+	for {
+		req, err := stream.Recv()
+		if err != nil{
+			return err
+		}
+
+		mediaInfo = req.MediaInfo
+	}
+
+	err := s.repository.AddMediaInfo(context.TODO(), mediaInfo)
+	if err != nil{
+		return err
+	}
+
+	return nil
 }

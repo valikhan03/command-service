@@ -30,6 +30,7 @@ type CommandServiceClient interface {
 	AddLot(ctx context.Context, in *AddLotRequest, opts ...grpc.CallOption) (*Response, error)
 	UpdateLot(ctx context.Context, in *UpdateLotRequest, opts ...grpc.CallOption) (*Response, error)
 	DeleteLot(ctx context.Context, in *DeleteLotRequest, opts ...grpc.CallOption) (*Response, error)
+	UploadMedia(ctx context.Context, opts ...grpc.CallOption) (CommandService_UploadMediaClient, error)
 }
 
 type commandServiceClient struct {
@@ -112,6 +113,40 @@ func (c *commandServiceClient) DeleteLot(ctx context.Context, in *DeleteLotReque
 	return out, nil
 }
 
+func (c *commandServiceClient) UploadMedia(ctx context.Context, opts ...grpc.CallOption) (CommandService_UploadMediaClient, error) {
+	stream, err := c.cc.NewStream(ctx, &CommandService_ServiceDesc.Streams[0], "/protobuf.CommandService/UploadMedia", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &commandServiceUploadMediaClient{stream}
+	return x, nil
+}
+
+type CommandService_UploadMediaClient interface {
+	Send(*UploadMediaRequest) error
+	CloseAndRecv() (*Response, error)
+	grpc.ClientStream
+}
+
+type commandServiceUploadMediaClient struct {
+	grpc.ClientStream
+}
+
+func (x *commandServiceUploadMediaClient) Send(m *UploadMediaRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *commandServiceUploadMediaClient) CloseAndRecv() (*Response, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(Response)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // CommandServiceServer is the server API for CommandService service.
 // All implementations must embed UnimplementedCommandServiceServer
 // for forward compatibility
@@ -124,6 +159,7 @@ type CommandServiceServer interface {
 	AddLot(context.Context, *AddLotRequest) (*Response, error)
 	UpdateLot(context.Context, *UpdateLotRequest) (*Response, error)
 	DeleteLot(context.Context, *DeleteLotRequest) (*Response, error)
+	UploadMedia(CommandService_UploadMediaServer) error
 }
 
 // UnimplementedCommandServiceServer must be embedded to have forward compatible implementations.
@@ -153,6 +189,9 @@ func (UnimplementedCommandServiceServer) UpdateLot(context.Context, *UpdateLotRe
 }
 func (UnimplementedCommandServiceServer) DeleteLot(context.Context, *DeleteLotRequest) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteLot not implemented")
+}
+func (UnimplementedCommandServiceServer) UploadMedia(CommandService_UploadMediaServer) error {
+	return status.Errorf(codes.Unimplemented, "method UploadMedia not implemented")
 }
 func (UnimplementedCommandServiceServer) mustEmbedUnimplementedCommandServiceServer() {}
 
@@ -311,6 +350,32 @@ func _CommandService_DeleteLot_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CommandService_UploadMedia_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(CommandServiceServer).UploadMedia(&commandServiceUploadMediaServer{stream})
+}
+
+type CommandService_UploadMediaServer interface {
+	SendAndClose(*Response) error
+	Recv() (*UploadMediaRequest, error)
+	grpc.ServerStream
+}
+
+type commandServiceUploadMediaServer struct {
+	grpc.ServerStream
+}
+
+func (x *commandServiceUploadMediaServer) SendAndClose(m *Response) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *commandServiceUploadMediaServer) Recv() (*UploadMediaRequest, error) {
+	m := new(UploadMediaRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // CommandService_ServiceDesc is the grpc.ServiceDesc for CommandService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -351,6 +416,12 @@ var CommandService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _CommandService_DeleteLot_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "UploadMedia",
+			Handler:       _CommandService_UploadMedia_Handler,
+			ClientStreams: true,
+		},
+	},
 	Metadata: "command_service.proto",
 }
