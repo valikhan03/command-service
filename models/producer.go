@@ -2,7 +2,7 @@ package models
 
 import (
 	"github.com/Shopify/sarama"
-
+	"log"
 )
 
 type EventProducer struct {
@@ -22,20 +22,17 @@ func (p *EventProducer) SendEvents() {
 	configs := GetKafkaConfigs()
 	for {
 		event := <-p.eventChan
-		//get topic from configs
-		topic := configs.Topic
 		eventjson, err := event.Marshal()
 		if err != nil {
-
+			log.Println(err)
 		}
 		msg := sarama.ProducerMessage{
-			Topic: topic,
+			Topic: configs.Topic,
 			Value: sarama.ByteEncoder(eventjson),
 		}
-
 		_, _, err = p.producer.SendMessage(&msg)
 		if err != nil {
-
+			log.Println(err)
 		}
 	}
 }

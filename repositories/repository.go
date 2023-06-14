@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	_ "github.com/jackc/pgx/stdlib"
 	"github.com/jmoiron/sqlx"
+	"github.com/valikhan03/tool"
 
 	"github.com/valikhan03/command-service/pb"
 )
@@ -26,9 +27,9 @@ func NewRepository(db *sqlx.DB) *Repository {
 func (r *Repository) CreateAuction(ctx context.Context, auction *pb.Auction) (string, error) {
 	query := `
 		INSERT INTO tb_auctions
-			(id, title, description, organizer_id, max_participants, participants_number, starts_at, ends_at)
+			(id, title, description, organizer_id, max_participants, participants_number)
 		VALUES 
-			($1, $2, $3, $4, $5, $6, $7, $8) 
+			($1, $2, $3, $4, $5, $6)
 	`
 	newid := uuid.New()
 	tx, err := r.db.BeginTxx(ctx, &sql.TxOptions{})
@@ -38,14 +39,14 @@ func (r *Repository) CreateAuction(ctx context.Context, auction *pb.Auction) (st
 	}
 
 	_, err = tx.Exec(query, newid, auction.Title, auction.Description, auction.OrganizerID, auction.MaxParticipants,
-		auction.ParticipantsNumber, auction.StartsAt, auction.EndsAt)
+		auction.ParticipantsNumber)
 	if err != nil {
 		tx.Rollback()
 		return "", err
 	}
 
 	query = `INSERT INTO tb_attempt_requirements 
-				(auction_id, approve_required, enter_fee_required, enter_fee_payment)
+				(auction_id, approve_required, enter_fee_required, enter_fee_amount)
 			VALUES
 				($1, $2, $3, $4)`
 	_, err = tx.Exec(query, newid, auction.Attempt_Requirements.ApproveRequired, auction.Attempt_Requirements.EnterFeeRequired, auction.Attempt_Requirements.EnterFeeAmount)
@@ -56,6 +57,18 @@ func (r *Repository) CreateAuction(ctx context.Context, auction *pb.Auction) (st
 
 	tx.Commit()
 	return newid.String(), nil
+}
+
+func (r *Repository) FormAuctionFee(auction_id string) (map[string]interface{}, error) {
+
+	auctionFee := map[string]interface{}{"price": 0,
+		"currency":     0,
+		"user_id":      0,
+		"product_id":   auction_id,
+		"product_type": 3,
+		"auction_id":   auction_id}
+
+	return auctionFee, nil
 }
 
 func (r *Repository) UpdateAuction(ctx context.Context, auction *pb.Auction) error {
@@ -111,7 +124,7 @@ func (r *Repository) AddParticipant(ctx context.Context, auction_id string, part
 	if err != nil {
 		return false, err
 	}
-	var requirements map[string]int 
+	var requirements map[string]int
 
 	rows, err := tx.Query(query, auction_id)
 	if err != nil {
@@ -126,17 +139,16 @@ func (r *Repository) AddParticipant(ctx context.Context, auction_id string, part
 		}
 	}
 
-	if requirements["approve_required"] == 1 || requirements["enter_fee_amount"] == 1{
+	if requirements["approve_required"] == 1 || requirements["enter_fee_amount"] == 1 {
 		query = `INSERT INTO tb_attempt_requests (auction_id, user_id) VALUES ($1, $2)`
 		_, err = tx.Exec(query, auction_id, participant_id)
-		if err != nil{
+		if err != nil {
 			tx.Rollback()
 			return false, err
 		}
 		return true, nil
 	}
 
-	
 	query = `INSERT INTO tb_participants (auction_id, user_id) VALUES ($1, $2)`
 
 	_, err = tx.Exec(query, auction_id, participant_id)
@@ -170,9 +182,9 @@ func (r *Repository) RemoveParticipant(ctx context.Context, auction_id string, p
 func (r *Repository) AddLot(ctx context.Context, lot *pb.Lot) (int, error) {
 	query := `
 		INSERT INTO tb_lots 
-			(auction_id, title, description, start_price, params)
+			(auction_id, title, description, start_price, currency, params)
 		VALUES
-			($1, $2, $3, $4, $5) 
+			($1, $2, $3, $4, $5, $6) 
 		RETURNING ID
 	`
 
@@ -183,8 +195,12 @@ func (r *Repository) AddLot(ctx context.Context, lot *pb.Lot) (int, error) {
 
 	var lot_params json.RawMessage
 	lot_params, err = json.Marshal(lot.Params)
+	if err != nil {
+		tx.Rollback()
+		return -1, err
+	}
 
-	rows, err := tx.Query(query, lot.AuctionId, lot.Title, lot.Description, lot.StartPrice, lot_params)
+	rows, err := tx.Query(query, lot.AuctionId, lot.Title, lot.Description, lot.StartPrice, lot.Currency, lot_params)
 	if err != nil {
 		tx.Rollback()
 		return -1, err
@@ -204,7 +220,7 @@ func (r *Repository) AddLot(ctx context.Context, lot *pb.Lot) (int, error) {
 
 func (r *Repository) UpdateLot(ctx context.Context, lot *pb.Lot) error {
 	query := `
-		UPDATE tb_lots SET title=$1, description=$2, start_price=$3, params=$4 WHERE id=$5
+		UPDATE tb_lots SET title=$1, description=$2, start_price=$3, currency=$4 params=$5 WHERE id=$6
 	`
 
 	tx, err := r.db.BeginTxx(ctx, &sql.TxOptions{})
@@ -214,8 +230,12 @@ func (r *Repository) UpdateLot(ctx context.Context, lot *pb.Lot) error {
 
 	var lot_params json.RawMessage
 	lot_params, err = json.Marshal(lot.Params)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
 
-	_, err = tx.Exec(query, lot.Title, lot.Description, lot.StartPrice, lot_params, lot.Id)
+	_, err = tx.Exec(query, lot.Title, lot.Description, lot.StartPrice, lot.Currency, lot_params, lot.Id)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -244,4 +264,16 @@ func (r *Repository) DeleteLot(ctx context.Context, id string) error {
 
 func (r *Repository) AddMediaInfo(ctx context.Context, mediaInfo *pb.MediaInfo) error {
 	return nil
+}
+
+func (r *Repository) GetAttemptRequirements(ctx context.Context, auctionID string) (*tool.AttemptRequirements, error) {
+	var attempt_reqs tool.AttemptRequirements
+	query := `select id, auction_id, approve_required, enter_fee_required, enter_fee_amount 
+			  from tb_attempt_requirements where auction_id=$1`
+	err := r.db.Get(&attempt_reqs, query, auctionID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &attempt_reqs, nil
 }

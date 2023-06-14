@@ -29,8 +29,9 @@ message Lot{
     string title = 3;
     string description = 4;
     int64 start_price = 5;
-    string category = 6;
-    map<string, string> params = 7;
+    string currency = 6;
+    string category = 7;
+    map<string, string> params = 8;
 };
 
 

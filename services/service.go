@@ -28,11 +28,20 @@ func (s *Service) CreateAuction(ctx context.Context, req *pb.CreateAuctionReques
 		return &pb.Response{}, err
 	}
 	req.Auction.Id = id
-	event := models.Event{
+	event1 := models.Event{
 		Command: tool.CRE_AUC_EVENT,
 		Entity:  req.Auction,
 	}
-	s.eventChan <- &event
+	s.eventChan <- &event1
+	auctionFee, err := s.repository.FormAuctionFee(id)
+	if err != nil{
+		return &pb.Response{}, err
+	}
+	event2 := models.Event{
+		Command: tool.CRE_INV_EVENT,
+		Entity: auctionFee,
+	}
+	s.eventChan <- &event2
 	return &pb.Response{}, nil
 }
 
@@ -71,6 +80,24 @@ func (s *Service) AddParticipant(ctx context.Context, req *pb.AddParticipantRequ
 		return &pb.Response{
 			Status: "",
 		}, nil
+	}
+
+	attempt_reqs, err := s.repository.GetAttemptRequirements(ctx, req.AuctionId)
+	if err != nil{
+		return &pb.Response{}, err
+	}
+
+	if attempt_reqs.EnterFee>0 {
+		event_inv := models.Event{
+			Command: tool.CRE_INV_EVENT,
+			Entity:   map[string]interface{}{"price": attempt_reqs.EnterFeeAmount, 
+			"currency": "KZT",
+			"user_id": req.ParticipantId, 
+			"product_id": req.AuctionId,
+			"product_type":2, 
+			"auction_id": req.AuctionId},
+		}
+		s.eventChan <- &event_inv
 	}
 	
 	event := models.Event{
